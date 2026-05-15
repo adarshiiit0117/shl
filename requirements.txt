@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sentence-transformers
+scikit-learn
+numpy
+pandas
+rank-bm25
+rapidfuzz
+python-dotenv
+groq
+pydantic
+requests
+beautifulsoup4
