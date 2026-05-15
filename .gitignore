@@ -15,9 +15,7 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Model / embeddings
-*.npy
-*.pkl
+
 
 # Logs
 *.log
