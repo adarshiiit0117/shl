@@ -7,21 +7,49 @@ from rank_bm25 import BM25Okapi
 from app.retrieval.embeddings import embed_text
 
 
-with open("app/data/catalog_clean_chunks.pkl", "rb") as f:
-    chunks = pickle.load(f)
+chunks = None
+embeddings = None
+bm25 = None
 
-embeddings = np.load("app/data/embeddings.npy")
 
+def load_resources():
 
-tokenized_docs = [
-    chunk["text"].lower().split()
-    for chunk in chunks
-]
+    global chunks
+    global embeddings
+    global bm25
 
-bm25 = BM25Okapi(tokenized_docs)
+    if chunks is None:
+
+        with open(
+            "app/data/catalog_clean_chunks.pkl",
+            "rb"
+        ) as f:
+
+            chunks = pickle.load(f)
+
+    if embeddings is None:
+
+        embeddings = np.load(
+            "app/data/embeddings.npy"
+        )
+
+    if bm25 is None:
+
+        tokenized_docs = [
+
+            chunk["text"].lower().split()
+
+            for chunk in chunks
+        ]
+
+        bm25 = BM25Okapi(
+            tokenized_docs
+        )
 
 
 def search(query, top_k=5):
+
+    load_resources()
 
     query_embedding = embed_text(query)
 
@@ -37,18 +65,26 @@ def search(query, top_k=5):
     max_keyword = max(keyword_scores)
 
     if max_keyword > 0:
-        keyword_scores = keyword_scores / max_keyword
+
+        keyword_scores = (
+            keyword_scores / max_keyword
+        )
 
     final_scores = (
+
         0.7 * semantic_scores +
+
         0.3 * keyword_scores
     )
 
-    ranked_indices = np.argsort(final_scores)[::-1]
+    ranked_indices = np.argsort(
+        final_scores
+    )[::-1]
 
     results = []
 
     blocked_words = [
+
         "report",
         "profile",
         "interpretation"
@@ -58,13 +94,16 @@ def search(query, top_k=5):
 
         chunk = chunks[idx]
 
-        name = chunk["metadata"]["name"].lower()
+        name = chunk["metadata"][
+            "name"
+        ].lower()
 
         blocked = False
 
         for word in blocked_words:
 
             if word in name:
+
                 blocked = True
                 break
 
